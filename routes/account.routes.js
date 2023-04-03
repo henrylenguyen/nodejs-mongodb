@@ -4,13 +4,42 @@ const AccountModel = require("../models/account.model");
 // Lấy dữ liệu từ db
 
 router.get("/",(req,res,next)=>{
-  AccountModel.find({})
-  .then(data=>{
-    res.json(data)
-  })
-  .catch(err=>{
-    res.json("Lỗi")
-  })
+  let page  = req.body.soTrang;
+  let PAGE_SIZE = req.body.SoPhanTuTrenTrang;
+  if(page){
+    // Lấy theo phân trang
+    if(page<1){
+      page=1;
+    }
+    page = parseInt(page);
+    let soLuongBoQua = (page-1)*PAGE_SIZE;
+    AccountModel.find({})
+    .skip(soLuongBoQua)
+    .limit(PAGE_SIZE)
+    .then(data=>{
+      AccountModel.countDocuments({}).then((total)=>{
+        let tongSoTrang = Math.floor(total/PAGE_SIZE)
+        res.json({
+          tongSoTrang: tongSoTrang,
+          data:data
+        })
+
+      })
+    })
+    .catch(err=>{
+      res.json("Lỗi")
+    })
+  }
+  else{
+    AccountModel.find({})
+    .then(data=>{
+      res.json(data)
+      
+    })
+    .catch(err=>{
+      res.json("Lỗi")
+    })
+  }
 })
 
 
